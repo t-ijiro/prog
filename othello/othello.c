@@ -71,12 +71,12 @@
 #define MOVE_TYPE_UP_DOWN (PORTH.PIDR.BIT.B3 == 0) // 上下方向移動モード
 
 // AIの先読みの回数
-#define AI_DEPTH 4
+#define AI_DEPTH 5
 
 // 評価関数の重み係数定義. どの要素をどれくらい重要視するか.
-#define POS_WEIGHT      7   // 位置評価の重み係数
-#define MOBILITY_WEIGHT 3   // 配置可能数評価の重み係数
-#define STABLE_WEIGHT   30  // 確定石数（４つ角）評価の重み係数
+#define POS_WEIGHT      10  // 位置評価の重み係数
+#define MOBILITY_WEIGHT 2   // 配置可能数評価の重み係数
+#define STABLE_WEIGHT   50  // 確定石数（４つ角）評価の重み係数
 
 // 無限大の代わりに使用する大きな値
 #define INF 100000
@@ -973,12 +973,16 @@ int evaluate_board(enum stone_color brd[][MAT_WIDTH], enum stone_color ai_color)
     enum stone_color opp_color = (ai_color == stone_red) ? stone_green : stone_red;
     int position_score, mobility_score, stable_score;
     int ai_stable, opp_stable;
+    int ai_mobility, opp_mobility;
 
     // 位置評価
     position_score = evaluate_position_weight(brd, ai_color);
 
-    // 配置可能数評価. 相手の手数が少ないほど有利.
-    mobility_score = -count_placeable(brd, opp_color);
+    // 配置可能数評価
+	// 自分の手数が多く、相手の手数が少ないほど有利
+    ai_mobility = count_placeable(brd, ai_color);
+    opp_mobility = count_placeable(brd, opp_color);
+    mobility_score = ai_mobility - opp_mobility;
 
     // 確定石評価
     ai_stable = count_stable_stones(brd, ai_color);
@@ -1048,7 +1052,8 @@ int minimax_alphabeta(enum stone_color brd[][MAT_WIDTH], enum stone_color ai_col
         {
             if(depth >= max_depth)
             {
-                // 葉ノード：評価値を計算
+                // 葉ノード
+				// 評価値を計算
                 score = evaluate_board(ai_buf[depth], ai_color);
                 depth--;
 
@@ -1104,7 +1109,8 @@ int minimax_alphabeta(enum stone_color brd[][MAT_WIDTH], enum stone_color ai_col
             is_max_player = stack_is_max[depth];
             current_color = (depth % 2 == 1) ? (ai_color == stone_red ? stone_green : stone_red) : ai_color;
 
-            // 初回訪問時：候補手を生成
+            // 初回訪問時
+			// 候補手を生成
             if(stack_move_idx[depth] == 0)
             {
                 ai_move_counts[depth] = 0;
@@ -1124,7 +1130,8 @@ int minimax_alphabeta(enum stone_color brd[][MAT_WIDTH], enum stone_color ai_col
                 // 手がない場合
                 if(ai_move_counts[depth] == 0)
                 {
-                    // パス：評価値を返す
+                    // パス
+					// 評価値を返す
                     score = evaluate_board(ai_buf[depth], ai_color);
                     depth--;
 
@@ -1475,7 +1482,7 @@ void main(void)
 
     // コマ反転用フラグ
 	//　       右下  右上   左下   左上  右   左   下   上
-	// flag :  b7    b6    b5    b4  b3   b2   b1   b0
+	// flag :  b7    b6    b5    b4    b3   b2   b1   b0
 	// bit  :  0..その方角にひっくり返せない, 1..その方角にひっくり返せる
     unsigned char flip_dir_flag;
 
