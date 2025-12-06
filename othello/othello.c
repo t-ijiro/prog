@@ -741,7 +741,7 @@ unsigned char make_flip_dir_flag(enum stone_color brd[][MAT_WIDTH], int x, int y
             // 何も置かれていなかったらbreak
             if(search == stone_black) break;
 
-            // 挟む側のコマの色に遭遇
+            // 自色のコマに遭遇
             if(search == sc)
             {
                 // i > 0 の時点で相手色を少なくとも1つは挟んでいる
