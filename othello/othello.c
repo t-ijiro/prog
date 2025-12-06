@@ -1173,7 +1173,8 @@ int count_stable_stones(enum stone_color brd[][MAT_WIDTH], enum stone_color colo
     return stable_count;
 }
 
-// 盤面評価関数：AI視点でのスコアを計算
+// 盤面評価関数
+// AI視点でのスコアを計算
 int evaluate_board(enum stone_color brd[][MAT_WIDTH], enum stone_color ai_color)
 {
     enum stone_color opp_color = (ai_color == stone_red) ? stone_green : stone_red;
@@ -1181,18 +1182,17 @@ int evaluate_board(enum stone_color brd[][MAT_WIDTH], enum stone_color ai_color)
     int ai_stable, opp_stable;
     int ai_mobility, opp_mobility;
 
-    // 位置評価 各マスの価値（角は高評価、角の隣は低評価など）
+    // 位置評価 各マスの価値
     position_score = evaluate_position_weight(brd, ai_color);
 
-    // 配置可能数評価（モビリティ）
+    // 配置可能数評価
     // 自分の手数が多く、相手の手数が少ないほど有利
-    // 選択肢が多い = 柔軟な戦略が可能
     ai_mobility = count_placeable(brd, ai_color);
     opp_mobility = count_placeable(brd, opp_color);
     mobility_score = ai_mobility - opp_mobility;
 
     // 確定石評価
-    // 角に配置された石は絶対に取られない（最重要要素）
+    // 角に配置された石は絶対に取られない
     ai_stable = count_stable_stones(brd, ai_color);
     opp_stable = count_stable_stones(brd, opp_color);
     stable_score = (ai_stable - opp_stable) * STABLE_WEIGHT;
@@ -1211,7 +1211,7 @@ int minimax_alphabeta(enum stone_color brd[][MAT_WIDTH], enum stone_color ai_col
     int score, best_score;
     int is_max_player;
 
-    // スタック用の変数（再帰の代わりにループで実装）
+    // スタック用の変数
     int stack_alpha[AI_DEPTH + 1];      // α値：MAXプレイヤーの保証された最小値
     int stack_beta[AI_DEPTH + 1];       // β値：MINプレイヤーの保証された最大値
     int stack_best_score[AI_DEPTH + 1]; // 各深さでの最良スコア
@@ -1250,7 +1250,7 @@ int minimax_alphabeta(enum stone_color brd[][MAT_WIDTH], enum stone_color ai_col
         x = ai_moves[0][i].x;
         y = ai_moves[0][i].y;
 
-        // 手を打つ：盤面をコピーして石を配置・反転
+        // 手を打つ盤面をコピーして石を配置・反転
         memcpy(ai_buf[1], ai_buf[0], sizeof(enum stone_color) * MAT_HEIGHT * MAT_WIDTH);
         flip_stones(make_flip_dir_flag(ai_buf[1], x, y, ai_color), ai_buf[1], x, y, ai_color);
 
@@ -1262,10 +1262,11 @@ int minimax_alphabeta(enum stone_color brd[][MAT_WIDTH], enum stone_color ai_col
         stack_is_max[1] = 0;        // 次は相手のターン（MINプレイヤー）
         score = -INF;
 
-        // 深さ優先探索をループで実装（再帰の代わり）
+        // 深さ優先探索をループで実装
         while(depth > 0)
         {
-            // 【葉ノード到達】指定した深さまで探索完了
+            // 葉ノード到達
+            // 指定した深さまで探索完了
             if(depth >= max_depth)
             {
                 // 評価値を計算
@@ -1601,7 +1602,7 @@ void init_lcd_show(enum stone_color sc)
 
 /****************************************** 割込み ************************************************/
 // CMT0 CMI0 1msタイマ割込みハンドラ
-// 用途：時間管理とブザー制御
+// 時間管理とブザー制御
 void Excep_CMT0_CMI0(void)
 {
     // 1msタイムカウンタをインクリメント（時刻管理用）
@@ -1619,7 +1620,7 @@ void Excep_CMT0_CMI0(void)
 }
 
 // CMT1 CMI1 2msタイマ割込みハンドラ
-// 用途：8×8 LEDマトリクスのダイナミック点灯制御
+// 8×8 LEDマトリクスのダイナミック点灯制御
 void Excep_CMT1_CMI1(void)
 {
     int x, y;
@@ -1673,7 +1674,7 @@ void Excep_CMT1_CMI1(void)
 }
 
 // CMT2 CMI2 10msタイマ割込みハンドラ
-// 用途：長時間待機用のタイムベース
+// タイミング調整
 void Excep_CMT2_CMI2(void)
 {
     // 10msタイムカウンタをインクリメント
@@ -1682,7 +1683,7 @@ void Excep_CMT2_CMI2(void)
 }
 
 // ICU IRQ0 SW6立下がり割込みハンドラ
-// 用途：ブザーON/OFFトグルスイッチ
+// ブザーON/OFF
 void Excep_ICU_IRQ0(void)
 {
     unsigned long now = tc_1ms;  // 現在の時刻を取得
@@ -1699,7 +1700,7 @@ void Excep_ICU_IRQ0(void)
 }
 
 // ICU IRQ1 SW7立下がり割込みハンドラ
-// 用途：決定ボタン（メニュー選択、石の配置確定など）
+// 決定ボタン
 void Excep_ICU_IRQ1(void)
 {
     unsigned long now = tc_1ms;  // 現在の時刻を取得
