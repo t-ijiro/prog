@@ -807,7 +807,7 @@ void flip_stones(unsigned char flag, enum stone_color brd[][MAT_WIDTH], int x, i
     }
 }
 
-// ボード上にその色のコマが置ける場所はあるか
+// ボード上の配置可能数を数える
 int count_placeable(enum stone_color brd[][MAT_WIDTH], enum stone_color sc)
 {
     int x, y;
