@@ -1794,7 +1794,7 @@ void main(void)
 		
 		    // ゲーム初期化状態
 		    case INIT_GAME:
-		        // A/D変換値を使って乱数シードを初期化（毎回異なるゲーム展開を実現）
+		        // A/D変換値を使って乱数シードを初期化
 		        srand(get_AD0_val());
 		        
 		        // ゲーム構造体を初期化
@@ -1856,7 +1856,7 @@ void main(void)
 		            // 選択変更音を鳴らす
 		            beep(DO3, 50, game.is_buzzer_active);
 		            
-		            // AI対戦モードをトグル（反転）
+		            // AI対戦モードをトグル
 		            game.is_vs_AI ^= 1;
 		
 		            // LCD表示を更新
@@ -1909,7 +1909,7 @@ void main(void)
 		    
 		    // AI思考状態
 		    case AI_THINK:
-		        // AIが次の手を決定（ミニマックス法+αβ枝刈り）
+		        // AIが次の手を決定
 		        // 現在の盤面、石の色、配置可能数、探索深度を渡す
 		        set_AI_cursor_dest(board, cursor.color, (cursor.color == stone_red) ? red.placeable_count : green.placeable_count, AI_DEPTH);
 		        // AI移動状態へ遷移
@@ -2004,7 +2004,7 @@ void main(void)
 		            state = PLACE_CHECK;
 		        }
 		
-		        // AI移動の待機時間（アニメーション用）
+		        // AI移動の待機時間
 		        wait_10ms(AI_MOVE_PERIOD_MS / 10);
 		        break;
 		
@@ -2155,10 +2155,10 @@ void main(void)
 		        lcd_puts("Winner is ...");
 		        flush_lcd();
 		
-		        // カーソルを黒に設定（結果表示用）
+		        // カーソルを消す
 		        set_cursor_color(stone_black);
 		        
-		        // 盤面に結果を整列表示（アニメーション付き）
+		        // 盤面に結果を整列表示
 		        line_up_result(board, red.result, green.result, LINE_UP_RESULT_PERIOD_MS / 10, &game.is_buzzer_active);
 		
 		        // 勝者を表示
