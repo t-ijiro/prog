@@ -483,7 +483,7 @@ void init_IRQ1(void)
 }
 
 // ブザー（PWM）初期化関数（MTU0使用）
-void init_BUZZER(void)
+void init_MTU0(void)
 {
     // プロテクトレジスタ解除
     SYSTEM.PRCR.WORD = 0x0A502;
@@ -604,20 +604,21 @@ void init_AD0(void)
     MPC.PWPR.BIT.PFSWE = 0;
 }
 
+// ハードウェア初期化
 void init_RX210(void)
 {
-    init_CLK();
-    init_LCD();
-    init_PORT();
-    init_CMT0();
-    init_CMT1();
-    init_CMT2();
-    init_IRQ0();
-    init_IRQ1();
-    init_BUZZER();
-    init_MTU1();
-    init_AD0();
-    setpsw_i();
+    init_CLK();    // 動作クロック設定
+    init_LCD();    // LCD表示
+    init_PORT();   // IO
+    init_CMT0();   // ブザーやスイッチ入力監視の時間管理
+    init_CMT1();   // マトリックスled描画
+    init_CMT2();   // タイミング調整
+    init_IRQ0();   // サウンドオンオフ
+    init_IRQ1();   // 決定ボタン
+    init_MTU0();   // ブザー
+    init_MTU1();   // ロータリーエンコーダ
+    init_AD0();    // 温度センサ
+    setpsw_i();    // 割り込み許可
 }
 /***********************************************************************************/
 /*********************************** ブザー ******************************************/
@@ -639,6 +640,7 @@ void beep(unsigned int tone, unsigned int interval, int active)
 }
 
 /********************************* LCD表示 ******************************************/
+// ターン表示
 void lcd_show_whose_turn(enum stone_color sc)
 {
     lcd_xy(1, 2);
@@ -649,6 +651,7 @@ void lcd_show_whose_turn(enum stone_color sc)
     flush_lcd();
 }
 
+// スキップメッセージ表示
 void lcd_show_skip_msg(void)
 {
     lcd_xy(1, 2);
@@ -658,6 +661,7 @@ void lcd_show_skip_msg(void)
     flush_lcd();
 }
 
+// 最終結果を元に勝者を表示
 void lcd_show_winner(int red_stone_count, int green_stone_count)
 {
     char *winner;
@@ -682,6 +686,7 @@ void lcd_show_winner(int red_stone_count, int green_stone_count)
     flush_lcd();
 }
 
+// ニューゲームに誘導
 void lcd_show_confirm(void)
 {
     lcd_clear();
@@ -1748,6 +1753,7 @@ void main(void)
     // 割り込み(IRQ0)用インスタンス
     Game_inst_ISR = &game;
 
+    // ハードウェア初期化
     init_RX210();
 
     while(1)
