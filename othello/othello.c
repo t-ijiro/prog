@@ -968,7 +968,7 @@ unsigned char make_flip_dir_flag(enum stone_color brd[][MAT_WIDTH], int x, int y
     return flag;
 }
 
-//その場所にその色は置けるか？
+// その場所にその色は置けるか？
 int is_placeable(enum stone_color brd[][MAT_WIDTH], int x, int y, enum stone_color sc)
 {
     unsigned char flag;
