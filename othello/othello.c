@@ -161,7 +161,7 @@ enum Direction{
     DOWN
 };
 
-// マトリックスLEDの色
+// コマの色
 enum stone_color{
     stone_red,  // 赤コマ
     stone_green,// 緑コマ
@@ -172,7 +172,6 @@ enum stone_color{
 struct Rotary{
     unsigned int current_cnt; // 現在のカウント数を保持
     unsigned int prev_cnt;    // 過去のカウント数を保持
-    int dir;
 };
 
 // カーソル
