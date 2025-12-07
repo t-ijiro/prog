@@ -1196,7 +1196,7 @@ int evaluate_board(enum stone_color brd[][MAT_WIDTH], enum stone_color ai_color)
     mobility_score = ai_mobility - opp_mobility;
 
     // 確定石評価
-    // 角に配置された石は絶対に取られない
+    // 角に配置されたコマは絶対に取られない
     ai_stable = count_stable_stones(brd, ai_color);
     opp_stable = count_stable_stones(brd, opp_color);
     stable_score = (ai_stable - opp_stable) * STABLE_WEIGHT;
@@ -1207,7 +1207,6 @@ int evaluate_board(enum stone_color brd[][MAT_WIDTH], enum stone_color ai_color)
 
 // ミニマックス法 + αβ枝刈りアルゴリズム
 // AIが最善の手を見つけるため、相手も最善手を打つと仮定して先読みする
-// 戻り値：選択された手のスコア
 int minimax_alphabeta(enum stone_color brd[][MAT_WIDTH], enum stone_color ai_color, int max_depth)
 {
     int depth, x, y, i, move_idx;
@@ -1254,7 +1253,7 @@ int minimax_alphabeta(enum stone_color brd[][MAT_WIDTH], enum stone_color ai_col
         x = ai_moves[0][i].x;
         y = ai_moves[0][i].y;
 
-        // 手を打つ盤面をコピーして石を配置・反転
+        // 手を打つ盤面をコピーしてコマを配置・反転
         memcpy(ai_buf[1], ai_buf[0], sizeof(enum stone_color) * MAT_HEIGHT * MAT_WIDTH);
         flip_stones(make_flip_dir_flag(ai_buf[1], x, y, ai_color), ai_buf[1], x, y, ai_color);
 
@@ -1449,7 +1448,7 @@ int minimax_alphabeta(enum stone_color brd[][MAT_WIDTH], enum stone_color ai_col
             y = ai_moves[depth][move_idx].y;
 
             // 手を打つ
-			// 盤面をコピーして石を配置・反転
+			// 盤面をコピーしてコマを配置・反転
             memcpy(ai_buf[depth + 1], ai_buf[depth], sizeof(enum stone_color) * MAT_HEIGHT * MAT_WIDTH);
             flip_stones(make_flip_dir_flag(ai_buf[depth + 1], x, y, current_color), ai_buf[depth + 1], x, y, current_color);
 
@@ -1641,12 +1640,12 @@ void Excep_CMT1_CMI1(void)
     {
         if(screen[y][x] == stone_red)
         {
-            // 赤石の場合：上位8ビット（bit8〜15）に対応するビットをセット
+            // 赤コマの場合：上位8ビット（bit8〜15）に対応するビットをセット
             rg_data |= (1 << (y + 8));
         }
         else if(screen[y][x] == stone_green)
         {
-            // 緑石の場合：下位8ビット（bit0〜7）に対応するビットをセット
+            // 緑コマの場合：下位8ビット（bit0〜7）に対応するビットをセット
             rg_data |= (1 << y);
         }
     }
@@ -1668,7 +1667,7 @@ void Excep_CMT1_CMI1(void)
     }
     else if(rg_data & ((1 << (cursor.y + 8)) | (1 << cursor.y)))
     {
-        // 消灯期間：カーソル位置に既に石がある場合はそれも消す
+        // 消灯期間：カーソル位置に既にコマがある場合はそれも消す
         // （カーソル位置のビットをクリア）
         rg_data &= ~((1 << (cursor.y + 8)) | (1 << cursor.y));
     }
@@ -1915,7 +1914,7 @@ void main(void)
 		    // AI思考状態
 		    case AI_THINK:
 		        // AIが次の手を決定
-		        // 現在の盤面、石の色、配置可能数、探索深度を渡す
+		        // 現在の盤面、コマの色、配置可能数、探索深度を渡す
 		        set_AI_cursor_dest(board, cursor.color, (cursor.color == stone_red) ? red.placeable_count : green.placeable_count, AI_DEPTH);
 		        // AI移動状態へ遷移
 		        state = AI_MOVE;
@@ -2039,7 +2038,7 @@ void main(void)
 		        // 配置成功音を鳴らす
 		        beep(DO2, 100, game.is_buzzer_active);
 		        
-		        // 石を配置
+		        // コマを配置
 		        place(board, cursor.x, cursor.y, cursor.color);
 		        
 		        // 盤面をLEDマトリクスに出力
@@ -2063,7 +2062,7 @@ void main(void)
 		    
 		    // 反転計算状態
 		    case FLIP_CALC:
-		        // どの方向の石を反転させるかのフラグを作成
+		        // どの方向のコマを反転させるかのフラグを作成
 		        flip_dir_flag = make_flip_dir_flag(board, cursor.x, cursor.y, cursor.color);
 		        
 		        // 反転実行状態へ遷移
@@ -2072,7 +2071,7 @@ void main(void)
 		
 		    // 反転実行状態
 		    case FLIP_RUN:
-		        // 石を反転
+		        // コマを反転
 		        flip_stones(flip_dir_flag, board, cursor.x, cursor.y, cursor.color);
 		        
 		        // 盤面をLEDマトリクスに出力
@@ -2145,7 +2144,7 @@ void main(void)
 		    
 		    // 結果計算状態
 		    case END_CALC:
-		        // 赤・緑それぞれの石の数を数える
+		        // 赤・緑それぞれのコマの数を数える
 		        red.result   = count_stones(board, stone_red);
 		        green.result = count_stones(board, stone_green);
 		        
