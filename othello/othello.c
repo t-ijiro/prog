@@ -11,6 +11,8 @@
 //  ・以下の割り込み関数をintprg.c内でコメントアウトする
 //    Excep_CMT0_CMI0, Excep_CMT1_CMI1, Excep_CMT2_CMI2, Excep_ICU_IRQ0, Excep_ICU_IRQ1
 //
+//  ・stacksct.hのsuを0x1000に変更する
+//
 //  ・ AI VS AI を観たいときは
 //    1. init_Game関数の g->is_AI_turn を1にする
 //    2. case INIT_GAME の state = TURN_START; のコメントアウトを外し、state = SELECT_WAIT; をコメントアウトする
