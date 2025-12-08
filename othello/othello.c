@@ -385,7 +385,7 @@ void init_CMT2(void)
     // プロテクトレジスタを再設定
     SYSTEM.PRCR.WORD = 0x0A500;
     
-    // コンペアマッチ値設定（(25000*10)/8 - 1 = 31249、約10ms周期）
+    // コンペアマッチ値設定（(25000*5)/8 - 1 = 15624、約5ms周期）
     CMT2.CMCOR = (25000 * 5) / 8 - 1;
     
     // コンペアマッチ割り込み有効、クロック分周比1/8
@@ -639,10 +639,10 @@ void init_RX210(void)
     init_CLK();    // 動作クロック設定
     init_LCD();    // LCD表示
     init_PORT();   // IO
-    init_CMT0();   // ブザー
+    init_CMT0();   // ブザー時間管理
     init_CMT1();   // マトリックスled描画
-    init_CMT2();   // タイミング調整
-    init_CMT3();   // 入力監視
+    init_CMT2();   // スイッチ入力監視
+    init_CMT3();   // 時間調整
     init_IRQ0();   // サウンドオンオフ
     init_IRQ1();   // 決定ボタン
     init_MTU0();   // ブザー
@@ -1709,6 +1709,7 @@ void Excep_CMT1_CMI1(void)
 void Excep_CMT2_CMI2(void)
 {
     // 5msタイムカウンタをインクリメント
+    // IRQ内でチャタリング除去に使用
     tc_5ms++;
 
     // 1秒間隔でリセットボタン入力を監視
@@ -1734,7 +1735,7 @@ void Excep_CMT2_CMI2(void)
 }
 
 // CMT3 CMI3 10msタイマ割込みハンドラ
-// タイミング調整
+// 時間調整
 void Excep_CMT3_CMI2(void)
 {
     // 10msタイムカウンタをインクリメント
