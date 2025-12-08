@@ -15,8 +15,8 @@
 //
 //  ・ AI VS AI を観たいときは
 //    1. init_Game関数の g->is_AI_turn を1にする
-//    2. case INIT_GAME の state = TURN_START; のコメントアウトを外し、state = SELECT_WAIT; をコメントアウトする
-//    3. 自動初期化して連続対戦させたいときはcase END_SHOW の state = INIT_HW; のコメントアウトを外し、state = END_WAIT; をコメントアウトする
+//    2. case INIT_GAME の game.state = TURN_START; のコメントアウトを外し、game.state = SELECT_WAIT; をコメントアウトする
+//    3. 自動初期化して連続対戦させたいときはcase END_SHOW の game.state = INIT_HW; のコメントアウトを外し、game.state = END_WAIT; をコメントアウトする
 //
 //  入力機能
 //  ・ロータリーエンコーダー : カーソル移動
