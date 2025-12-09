@@ -1731,6 +1731,7 @@ void Excep_CMT2_CMI2(void)
         if(g_Game_inst->count_to_reset > 2)
         {
             beep(DO2, 300);
+            g_Game_inst->count_to_reset = 0;
             g_Game_inst->is_reset = 1;
         }
     }
