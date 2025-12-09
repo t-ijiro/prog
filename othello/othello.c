@@ -193,7 +193,8 @@ struct Player{
 struct Game{
     enum State state;     // 状態
 	int count_to_reset;   // リセットボタンのカウント数
-	int is_buzzer_active; // サウンドはオンかオフか？
+	int is_reset;         // リセットフラグ
+    int is_buzzer_active; // サウンドはオンかオフか？
 	int is_vs_AI;         // AI対戦モードか？
 	int is_AI_turn;       // AIのターンか？
 	int is_skip;          // スキップか？
@@ -1578,6 +1579,7 @@ void init_Rotary(struct Rotary *r)
 void init_Game(struct Game *g)
 {
 	g->count_to_reset   = 0;
+    g->is_reset         = 0;
 	g->is_buzzer_active = 0;
 	g->is_vs_AI         = 0;
 	g->is_AI_turn       = 1;
@@ -1729,7 +1731,7 @@ void Excep_CMT2_CMI2(void)
         if(g_Game_inst->count_to_reset > 2)
         {
             beep(DO2, 300);
-            g_Game_inst->state = INIT_HW;
+            g_Game_inst->is_reset = 1;
         }
     }
 }
@@ -1813,6 +1815,14 @@ void main(void)
 
     while(1)
     {
+        // リセットして初期化フェーズへ
+        if(game.is_reset)
+        {
+            game.state = INIT_HW;
+            
+            game.is_reset = 0;
+        }
+        
         switch(game.state)
 		{
 		    //********** 初期化フェーズ **********//
