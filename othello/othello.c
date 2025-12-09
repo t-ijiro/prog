@@ -71,7 +71,7 @@
 #define MOVE_TYPE_UP_DOWN (PORTH.PIDR.BIT.B3 == 0) // 上下方向移動モード
 
 // AIの先読みの回数
-#define AI_DEPTH 5
+#define AI_DEPTH 3
 
 // 評価関数の重み係数定義. どの要素をどれくらい重要視するか.
 #define POS_WEIGHT      10  // 位置評価の重み係数
