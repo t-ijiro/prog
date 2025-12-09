@@ -1816,7 +1816,7 @@ void main(void)
 
     while(1)
     {
-        // リセットして初期化フェーズへ
+        // フラグが立ったらリセットして初期化フェーズへ
         if(game.is_reset)
         {
             game.state = INIT_HW;
