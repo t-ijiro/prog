@@ -1580,9 +1580,9 @@ void init_Game(struct Game *g)
 {
 	g->count_to_reset   = 0;
     g->is_reset         = 0;
-	g->is_buzzer_active = 0;
+    g->is_buzzer_active = 1;
 	g->is_vs_AI         = 0;
-	g->is_AI_turn       = 1;
+	g->is_AI_turn       = 0;
 	g->is_skip          = 0;
 }
 
@@ -1864,9 +1864,9 @@ void main(void)
 		        flush_board(board);
 
 		        // 対戦モード選択待ち状態へ遷移
-		        //game.state = SELECT_WAIT;
+		        game.state = SELECT_WAIT;
 
-		        game.state = TURN_START;
+		        //game.state = TURN_START;
 		        break;
 
 		    //********** 対戦モード選択フェーズ **********//
@@ -2221,9 +2221,9 @@ void main(void)
 		        lcd_show_confirm();
 
 		        // 終了待ち状態へ遷移
-		        //game.state = END_WAIT;
+		        game.state = END_WAIT;
 
-		        game.state = INIT_HW;
+		        //game.state = INIT_HW;
 		        break;
 
 		    // 終了待ち状態
