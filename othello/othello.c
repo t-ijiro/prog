@@ -1260,7 +1260,7 @@ int evaluate_board(enum stone_color brd[][MAT_WIDTH], enum stone_color ai_color)
     return position_score * POS_WEIGHT + mobility_score * MOBILITY_WEIGHT + stable_score;
 }
 
-// ミニマックス法 + αβ枝刈りアルゴリズム
+// ミニマックス法 + αβ枝刈り
 // AIが最善の手を見つけるため、相手も最善手を打つと仮定して先読みする
 int minimax_alphabeta(enum stone_color brd[][MAT_WIDTH], enum stone_color ai_color, int max_depth)
 {
@@ -1270,8 +1270,8 @@ int minimax_alphabeta(enum stone_color brd[][MAT_WIDTH], enum stone_color ai_col
     int is_max_player;
 
     // スタック用の変数
-    int stack_alpha[AI_DEPTH + 1];      // α値：MAXプレイヤーの保証された最小値
-    int stack_beta[AI_DEPTH + 1];       // β値：MINプレイヤーの保証された最大値
+    int stack_alpha[AI_DEPTH + 1];      // α値：MAXプレイヤーの最小値
+    int stack_beta[AI_DEPTH + 1];       // β値：MINプレイヤーの最大値
     int stack_best_score[AI_DEPTH + 1]; // 各深さでの最良スコア
     int stack_move_idx[AI_DEPTH + 1];   // 現在評価中の手のインデックス
     int stack_is_max[AI_DEPTH + 1];     // MAXプレイヤーかどうかのフラグ
@@ -1359,7 +1359,7 @@ int minimax_alphabeta(enum stone_color brd[][MAT_WIDTH], enum stone_color ai_col
                     }
                     else  // MINプレイヤー（相手）
                     {
-                        // より悪いスコア（相手視点では良い）を選択
+                        // より悪いスコアを選択
                         if(score < stack_best_score[depth])
                             stack_best_score[depth] = score;
 
@@ -1686,20 +1686,20 @@ void Excep_CMT1_CMI1(void)
     // 2msタイムカウンタをインクリメント
     tc_2ms++;
 
-    // 現在表示する列を決定（0〜7を順番に繰り返す）
+    // 現在表示する列を決定
     x = tc_2ms % MAT_WIDTH;
 
-    // 指定列(x)の全行(y)をスキャンして表示データを作成
+    // 指定列xの全行yをスキャンして表示データを作成
     for(y = 0; y < MAT_HEIGHT; y++)
     {
         if(screen[y][x] == stone_red)
         {
-            // 赤コマの場合：上位8ビット（bit8〜15）に対応するビットをセット
+            // 赤コマの場合上位8ビット（bit8〜15）に対応するビットをセット
             rg_data |= (1 << (y + 8));
         }
         else if(screen[y][x] == stone_green)
         {
-            // 緑コマの場合：下位8ビット（bit0〜7）に対応するビットをセット
+            // 緑コマの場合下位8ビット（bit0〜7）に対応するビットをセット
             rg_data |= (1 << y);
         }
     }
@@ -1722,7 +1722,7 @@ void Excep_CMT1_CMI1(void)
     else if(rg_data & ((1 << (cursor.y + 8)) | (1 << cursor.y)))
     {
         // 消灯期間：カーソル位置に既にコマがある場合はそれも消す
-        // （カーソル位置のビットをクリア）
+        // カーソル位置のビットをクリア
         rg_data &= ~((1 << (cursor.y + 8)) | (1 << cursor.y));
     }
 
@@ -1797,7 +1797,7 @@ void Excep_ICU_IRQ1(void)
 	// 前回のIRQ発生から指定時間経っていない場合は無視
     if(now - tc_IRQ < MONITOR_CHATTERING_PERIOD_MS / 5) return;
 
-    // 選択ボタン押下フラグをセット
+    // 決定ボタン押下フラグをセット
     select_btn_on = 1;
 
     // 最後のIRQ発生時刻を記録（次回のチャタリング判定用）
