@@ -150,7 +150,10 @@ enum State {
     END_CALC,
     END_SHOW,
     END_WAIT,
-    END_RESET
+    END_RESET,
+
+	// 未定義状態
+	STATE_UNDEFINED
 };
 
 // コマが動く方角
@@ -726,6 +729,22 @@ void lcd_show_confirm(void)
     lcd_xy(1, 2);
     lcd_puts("NEW -> PUSH SW7");
     flush_lcd();
+}
+
+// LCDをクリアして勝者発表メッセージを表示
+void lcd_show_result_ready(void)
+{
+	lcd_clear();
+	lcd_puts("Winner is ...");
+	flush_lcd();
+}
+
+// 未定義状態を通知
+void lcd_show_state_err(void)
+{
+	lcd_clear();
+	lcd_puts("Undefine state");
+	flush_lcd();
 }
 /*************************************************************************************/
 
@@ -2200,10 +2219,9 @@ void main(void)
 
 		    // 結果表示状態
 		    case END_SHOW:
-		        // LCDをクリアして勝者発表メッセージを表示
-		        lcd_clear();
-		        lcd_puts("Winner is ...");
-		        flush_lcd();
+		        
+				// LCDをクリアして勝者発表メッセージを表示
+				lcd_show_result_ready();
 
 		        // カーソルを消す
 		        set_cursor_color(stone_black);
@@ -2242,9 +2260,17 @@ void main(void)
 		        // ハードウェア初期化状態へ遷移（ゲームを最初からやり直す）
 		        game.state = INIT_HW;
 		        break;
-
+			
+			// 未定義状態
+			case STATE_UNDEFINED:
+				nop();
+				break;
+			
 		    // 予期しない状態の場合
 		    default:
+				// 未定義状態を通知
+				lcd_show_state_err();
+				game.state = STATE_UNDEFINED;
 		        break;
 		}
     }
