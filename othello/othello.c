@@ -878,77 +878,86 @@ void move_cursor(enum Direction dir)
     int cx = cursor.x;
     int cy = cursor.y;
 
-    if (dir == LEFT)  // 左
+    switch (dir)
     {
-        // 左シフト
-        cx--;
+        case LEFT:
+            // 左シフト
+            cx--;
 
-        // 左端まで行ったら一つ上の行の右端にワープ
-        if (cx < 0)
-        {
-        	cx = MAT_WIDTH - 1;
-        	cy++;
+            // 左端まで行ったら一つ上の行の右端にワープ
+            if (cx < 0)
+            {
+                cx = MAT_WIDTH - 1;
+                cy++;
 
-            // 上端を超えたら一番下の行にワープ
+                // 上端を超えたら一番下の行にワープ
+                if (cy > MAT_HEIGHT - 1)
+                {
+                    cy = 0;
+                }
+            }
+
+            break;
+
+        case RIGHT:
+            // 右シフト
+            cx++;
+
+            // 右端まで行ったら一つ下の行の左端にワープ
+            if (cx > MAT_WIDTH - 1)
+            {
+                cx = 0;
+                cy--;
+
+                // 下端を超えたら一番上の行にワープ
+                if (cy < 0)
+                {
+                    cy = MAT_HEIGHT - 1;
+                }
+            }
+
+            break;
+
+        case UP:
+            // 上シフト
+            cy++;
+
+            // 上端まで行ったら一つの右の列の下端にワープ
             if (cy > MAT_HEIGHT - 1)
             {
-            	cy = 0;
+                cx++;
+                cy = 0;
+
+                // 右端を超えたら一番左の列にワープ
+                if (cx > MAT_WIDTH - 1)
+                {
+                    cx = 0;
+                }
             }
-        }
-    }
-    else if (dir == RIGHT)  // 右
-    {
-        // 右シフト
-    	cx++;
 
-        // 右端まで行ったら一つ下の行の左端にワープ
-        if (cx > MAT_WIDTH - 1)
-        {
-        	cx = 0;
-        	cy--;
+            break;
 
-            // 下端を超えたら一番上の行にワープ
+        case DOWN:
+            // 下シフト
+            cy--;
+
+            // 下端まで行ったら一つ左の行の上端にワープ
             if (cy < 0)
             {
-            	cy = MAT_HEIGHT - 1;
+                cy = MAT_HEIGHT - 1;
+                cx--;
+
+                // 左端を超えたら一番右の列にワープ
+                if (cx < 0)
+                {
+                    cx = MAT_WIDTH - 1;
+                }
             }
-        }
-    }
-    else if (dir == UP) // 上
-    {
-        // 上移動
-    	cy++;
 
-        // 上端まで行ったら一つの右の列の下端にワープ
-		if (cy > MAT_HEIGHT - 1)
-		{
-			cx++;
-			cy = 0;
+            break;
 
-            // 右端を超えたら一番左の列にワープ
-			if (cx > MAT_WIDTH - 1)
-			{
-				cx = 0;
-			}
-		}
-    }
-    else if(dir == DOWN) // 下
-    {
-        // 下移動
-    	cy--;
-
-        // 下端まで行ったら一つ左の行の上端にワープ
-		if (cy < 0)
-		{
-			cy = MAT_HEIGHT - 1;
-			cx--;
-
-            // 左端を超えたら一番右の列にワープ
-			if (cx < 0)
-			{
-				cx = MAT_WIDTH - 1;
-			}
-		}
+        default:
+            break;
     }
 
     set_cursor_xy(cx, cy);
