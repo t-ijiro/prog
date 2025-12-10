@@ -3,8 +3,6 @@
  *
  *  Created on: 2018/08/29
  *      Author kwatanabe
- *  Changed on: 2025/11/25
- *      by T.Ijiro
  */
 
 #ifndef ONKAI_H_
