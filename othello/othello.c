@@ -176,6 +176,23 @@ enum stone_color{
     stone_black // 何も置かれていない
 };
 
+// ゲームシステム
+struct Game{
+    enum State    state;               // 状態
+	int           count_to_reset;      // リセットボタンのカウント数
+	unsigned char is_reset         :1; // リセットフラグ
+    unsigned char is_buzzer_active :1; // サウンドはオンかオフか？
+	unsigned char is_vs_AI         :1; // AI対戦モードか？
+	unsigned char is_AI_turn       :1; // AIのターンか？
+	unsigned char is_skip          :1; // スキップか？
+};
+
+// プレイヤー情報
+struct Player{
+	int placeable_count; // 配置可能数
+	int result;          // 最終的なコマの保有数
+};
+
 // ロータリーエンコーダー
 struct Rotary{
     unsigned int current_cnt; // 現在のカウント数を保持
@@ -189,23 +206,6 @@ struct Cursor{
     int dest_x;             // 目的地のx座標
     int dest_y;             // 目的地のy座標
     enum stone_color color; // カーソルの色
-};
-
-// プレイヤー情報
-struct Player{
-	int placeable_count; // 配置可能数
-	int result;          // 最終的なコマの保有数
-};
-
-// ゲームシステム
-struct Game{
-    enum State state;     // 状態
-	int count_to_reset;   // リセットボタンのカウント数
-	int is_reset;         // リセットフラグ
-    int is_buzzer_active; // サウンドはオンかオフか？
-	int is_vs_AI;         // AI対戦モードか？
-	int is_AI_turn;       // AIのターンか？
-	int is_skip;          // スキップか？
 };
 
 // 手の情報を保持する. AI推論用
@@ -661,20 +661,25 @@ void init_RX210(void)
 }
 /***********************************************************************************/
 /*********************************** ブザー ******************************************/
+// ビープ音を鳴らす
 void beep(unsigned int tone, unsigned int interval)
 {
+	// tone(周期基準)が非0　かつ ブザーが有効の場合
     if (tone && g_Game_inst->is_buzzer_active)
     {
+		//　矩形波生成
         MTU.TSTR.BIT.CST0 = 0;
-        MTU0.TGRA = tone;
+        MTU0.TGRA = tone;　
         MTU0.TGRB = tone / 2;
         MTU.TSTR.BIT.CST0 = 1;
     }
+	// それ以外はブザー停止
     else
     {
         MTU.TSTR.BIT.CST0 = 0;
     }
 
+	// CMT0でデクリメント. 0になったらCMT0内でMTU.TSTR.BIT.CST0 = 0;
     beep_period_ms = interval;
 }
 
