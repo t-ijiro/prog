@@ -731,7 +731,7 @@ void lcd_show_confirm(void)
     flush_lcd();
 }
 
-// LCDをクリアして勝者発表メッセージを表示
+// LCDをクリアして勝者発表メッセージ準備
 void lcd_show_result_ready(void)
 {
 	lcd_clear();
@@ -2220,7 +2220,7 @@ void main(void)
 		    // 結果表示状態
 		    case END_SHOW:
 		        
-				// LCDをクリアして勝者発表メッセージを表示
+				// LCDをクリアして勝者発表メッセージ準備
 				lcd_show_result_ready();
 
 		        // カーソルを消す
