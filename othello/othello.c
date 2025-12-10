@@ -210,15 +210,15 @@ struct Move{
 
 
 /************************************* 割り込み使用グローバル変数 ********************************************/
-static volatile unsigned long tc_2ms;                                    // 2msタイマーカウンター
-static volatile unsigned long tc_5ms;                                    // 5msタイマーカウンター
-static volatile unsigned long tc_10ms;                                   // 10msタイマーカウンター
-static volatile unsigned long tc_IRQ;                                    // IRQ発生時のタイマカウンター
-static volatile unsigned char select_btn_on;                             // 決定ボタン押下 IRQ1発生フラグ(sw7)
-static volatile unsigned int  beep_period_ms;                            // ブザーを鳴らす時間(1ms基準)
-static volatile enum          stone_color screen[MAT_HEIGHT][MAT_WIDTH]; // 割り込みで描画に使用.
-static volatile struct        Game *g_Game_inst;                         // グローバルアクセスGameインスタンス. ISRとbeep関数で使用.
-static volatile struct        Cursor cursor;                             // Cursorインスタンス
+static volatile unsigned long    tc_2ms;                        // 2msタイマーカウンター
+static volatile unsigned long    tc_5ms;                        // 5msタイマーカウンター
+static volatile unsigned long    tc_10ms;                       // 10msタイマーカウンター
+static volatile unsigned long    tc_IRQ;                        // IRQ発生時のタイマカウンター
+static volatile unsigned char    select_btn_on;                 // 決定ボタン押下 IRQ1発生フラグ(sw7)
+static volatile unsigned int     beep_period_ms;                // ブザーを鳴らす時間(1ms基準)
+static volatile enum stone_color screen[MAT_HEIGHT][MAT_WIDTH]; // 割り込みで描画に使用
+static volatile struct Game *    g_Game_inst;                   // グローバルアクセスGameインスタンス. ISRとbeep関数で使用.
+static volatile struct Cursor    cursor;                        // グローバルアクセスCursorインスタンス
 /************************************************************************************************************/
 
 
@@ -226,8 +226,8 @@ static volatile struct        Cursor cursor;                             // Curs
 // グローバル静的バッファ
 static enum stone_color ai_buf[AI_DEPTH + 1][MAT_HEIGHT][MAT_WIDTH]; // 深さごとのシミュレーションバッファ
 static int              ai_entry_idx[MAT_HEIGHT * MAT_WIDTH];        // ソートに対応させるための座標配列のインデックス
-static struct Move      ai_moves[AI_DEPTH][MAT_HEIGHT * MAT_WIDTH];  // 各深さでの候補手リスト
 static int              ai_move_counts[AI_DEPTH];                    // 各深さでの候補手数
+static struct Move      ai_moves[AI_DEPTH][MAT_HEIGHT * MAT_WIDTH];  // 各深さでの候補手リスト
 /***************************************************************************************************************************/
 
 
