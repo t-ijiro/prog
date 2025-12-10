@@ -1627,7 +1627,8 @@ void init_Player(struct Player *p1, struct Player *p2)
 
 // 盤面初期化
 void init_board(enum stone_color brd[][MAT_WIDTH])
-{   int x, y;
+{   
+	int x, y;
 
     // コマ全撤去
     for(x = 0;x < MAT_WIDTH; x++)
