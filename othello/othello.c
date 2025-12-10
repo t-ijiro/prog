@@ -9,7 +9,12 @@
 //
 //  ビルド
 //  ・以下の割り込み関数をintprg.c内でコメントアウトする
-//    Excep_CMT0_CMI0, Excep_CMT1_CMI1, Excep_CMT2_CMI2, Excep_ICU_IRQ0, Excep_ICU_IRQ1
+//    1.Excep_CMT0_CMI0
+//    2.Excep_CMT1_CMI1
+//    3.Excep_CMT2_CMI2
+//    4.Excep_CMT3_CMI3
+//    5.Excep_ICU_IRQ0
+//    6.Excep_ICU_IRQ1
 //
 //  ・stacksct.hのsuを0x1000に変更する
 //
