@@ -1754,7 +1754,7 @@ void Excep_CMT2_CMI2(void)
     tc_5ms++;
 
     // 1秒間隔でリセットボタン入力を監視
-    if(tc_5ms % (1000 / 5))
+    if(tc_5ms % (1000 / 5) == 0)
     {
         if(RESET_BTN_ON)
         {
