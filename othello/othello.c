@@ -45,6 +45,16 @@
 #include "onkai.h"
 
 /************************************ マクロ *************************************************/
+// ゲーム初期化オプションマスク
+#define OPT_RES       0x01 // リセットフラグ
+#define OPT_SND       0x02 // サウンドフラグ
+#define OPT_MAN_VS_AI 0x04 // 対AIモードフラグ
+#define OPT_AI_TURN   0x08 // AI先攻フラグ
+#define OPT_SKIP      0x10 // スキップフラグ
+
+#define OPT_NORMAL      OPT_SND                // 通常時初期化オプション
+#define OPT_EXHIBITION (OPT_SND | OPT_AI_TURN) // AI vs AI 時初期化オプション
+
 // 時間、周期
 #define MONITOR_CHATTERING_PERIOD_MS 300  // チャタリング監視周期. IRQ用.
 #define CURSOR_BLINK_PERIOD_MS       150  // カーソルの点滅周期
@@ -176,13 +186,11 @@ enum stone_color{
     stone_black // 何も置かれていない
 };
 
-// ゲームシステム
+// ゲーム情報
 struct Game{
-    enum State    state;               // 状態
-	int           count_to_reset;      // リセットボタンのカウント数
 	unsigned char is_reset         :1; // リセットフラグ
     unsigned char is_buzzer_active :1; // サウンドはオンかオフか？
-	unsigned char is_vs_AI         :1; // AI対戦モードか？
+	unsigned char is_man_vs_AI     :1; // 対AIモードか？
 	unsigned char is_AI_turn       :1; // AIのターンか？
 	unsigned char is_skip          :1; // スキップか？
 };
@@ -224,6 +232,7 @@ static volatile unsigned long    tc_10ms;                       // 10msタイマ
 static volatile unsigned long    tc_IRQ;                        // IRQ発生時のタイマカウンター
 static volatile unsigned char    select_btn_on;                 // 決定ボタン押下 IRQ1発生フラグ(sw7)
 static volatile unsigned int     beep_period_ms;                // ブザーを鳴らす時間(1ms基準)
+static volatile unsigned int     count_to_reset;                // リセットボタン押下のカウント数
 static volatile enum stone_color screen[MAT_HEIGHT][MAT_WIDTH]; // 割り込みで描画に使用
 static volatile struct Game *    g_Game_inst;                   // グローバルアクセスGameインスタンス. ISRとbeep関数で使用.
 static volatile struct Cursor    cursor;                        // グローバルアクセスCursorインスタンス
@@ -669,7 +678,7 @@ void beep(unsigned int tone, unsigned int interval)
     {
 		//　矩形波生成
         MTU.TSTR.BIT.CST0 = 0;
-        MTU0.TGRA = tone;　
+        MTU0.TGRA = tone;
         MTU0.TGRB = tone / 2;
         MTU.TSTR.BIT.CST0 = 1;
     }
@@ -1613,15 +1622,13 @@ void init_Rotary(struct Rotary *r)
 }
 
 // ゲーム情報初期化
-// stateメンバーは状態管理のために外部で初期化
-void init_Game(struct Game *g)
+void init_Game(struct Game *g, unsigned int option)
 {
-	g->count_to_reset   = 0;
-    g->is_reset         = 0;
-    g->is_buzzer_active = 1;
-	g->is_vs_AI         = 0;
-	g->is_AI_turn       = 0;
-	g->is_skip          = 0;
+    g->is_reset         = option & (0x01 << 0);
+    g->is_buzzer_active = option & (0x01 << 1);
+	g->is_man_vs_AI     = option & (0x01 << 2);
+	g->is_AI_turn       = option & (0x01 << 3);
+	g->is_skip          = option & (0x01 << 4);
 }
 
 // プレイヤー情報初期化
@@ -1759,18 +1766,18 @@ void Excep_CMT2_CMI2(void)
         if(RESET_BTN_ON)
         {
             beep(DO1, 50);
-            g_Game_inst->count_to_reset++;
+            count_to_reset++;
         }
         else
         {
-        	g_Game_inst->count_to_reset = 0;
+            count_to_reset = 0;
         }
 
         // 2～3秒長押しされたらリセット
-        if(g_Game_inst->count_to_reset > 2)
+        if(count_to_reset > 2)
         {
             beep(DO2, 300);
-            g_Game_inst->count_to_reset = 0;
+            count_to_reset = 0;
             g_Game_inst->is_reset = 1;
         }
     }
@@ -1825,6 +1832,8 @@ void Excep_ICU_IRQ1(void)
 /******************************************** メイン ***********************************************/
 void main(void)
 {
+    enum State state = INIT_HW;
+
     // ボード色情報
     enum stone_color board[MAT_HEIGHT][MAT_WIDTH];
 
@@ -1843,8 +1852,8 @@ void main(void)
 	// bit  :  0..その方角にひっくり返せない, 1..その方角にひっくり返せる
     unsigned char flip_dir_flag;
 
-    // 初期状態
-    game.state = INIT_HW;
+    // 初期化オプション
+    unsigned int init_option = OPT_NORMAL;
 
     // グローバルアクセスGameインスタンス
     // ISR と beep関数で使用
@@ -1858,12 +1867,16 @@ void main(void)
         // フラグが立ったら初期化フェーズへ
         if(game.is_reset)
         {
-            game.state = INIT_HW;
+            // 対戦モード選択中フェーズだったら初期化オプションをAI vs AI エキシビションに設定
+            // それ以外の場合は通常初期化オプション
+            init_option = (state == SELECT_WAIT || state == SELECT_VS) ? OPT_EXHIBITION : OPT_NORMAL;
+          
+            state = INIT_HW;
             
             game.is_reset = 0;
         }
         
-        switch(game.state)
+        switch(state)
 		{
 		    //********** 初期化フェーズ **********//
 
@@ -1876,7 +1889,7 @@ void main(void)
 		        init_Rotary(&rotary);
 
 		        // ゲーム初期化状態へ遷移
-		        game.state = INIT_GAME;
+		        state = INIT_GAME;
 		        break;
 
 		    // ゲーム初期化状態
@@ -1885,7 +1898,7 @@ void main(void)
 		        srand(get_AD0_val());
 
 		        // ゲーム構造体を初期化
-		        init_Game(&game);
+		        init_Game(&game, init_option);
 
 		        // 赤・緑プレイヤーの情報を初期化
 		        init_Player(&red, &green);
@@ -1902,10 +1915,10 @@ void main(void)
 		        // 盤面をLEDマトリクスに出力
 		        flush_board(board);
 
-		        // 対戦モード選択待ち状態へ遷移
-		        game.state = SELECT_WAIT;
+		        // 通常時:対戦モード選択待ち状態へ遷移
+                // AI vs AI時:ターン開始状態へ遷移
+		        state = (init_option == OPT_NORMAL) ? SELECT_WAIT : TURN_START;
 
-		        //game.state = TURN_START;
 		        break;
 
 		    //********** 対戦モード選択フェーズ **********//
@@ -1922,7 +1935,7 @@ void main(void)
 		            lcd_show_whose_turn(cursor.color);
 
 		            // ゲーム開始：ターン開始状態へ遷移
-		            game.state = TURN_START;
+		            state = TURN_START;
 
 		            // 割り込みフラグをクリア
 		            select_btn_on = 0;
@@ -1930,7 +1943,7 @@ void main(void)
 		        else
 		        {
 		            // まだ決定されていない場合は対戦モード選択状態へ
-		            game.state = SELECT_VS;
+		            state = SELECT_VS;
 		        }
 		        break;
 
@@ -1946,10 +1959,10 @@ void main(void)
 		            beep(DO3, 50);
 
 		            // AI対戦モードをトグル
-		            game.is_vs_AI ^= 1;
+		            game.is_man_vs_AI ^= 1;
 
 		            // LCD表示を更新
-		            if(game.is_vs_AI)
+		            if(game.is_man_vs_AI)
 		            {
 		                // AI対戦モード選択時
 		                lcd_xy(1, 2);
@@ -1969,7 +1982,7 @@ void main(void)
 		        rotary.prev_cnt = rotary.current_cnt;
 
 		        // 選択待ち状態へ戻る
-		        game.state = SELECT_WAIT;
+		        state = SELECT_WAIT;
 		        break;
 
 		    //********** ターン開始フェーズ **********//
@@ -1977,7 +1990,7 @@ void main(void)
 		    // ターン開始状態
 		    case TURN_START:
 		        // ターンチェック状態へ遷移
-		        game.state = TURN_CHECK;
+		        state = TURN_CHECK;
 		        break;
 
 		    // ターンチェック状態（プレイヤーがAIか人間かを判定）
@@ -1985,12 +1998,12 @@ void main(void)
 		        if(game.is_AI_turn)
 		        {
 		            // AIのターンの場合、AI思考状態へ
-		            game.state = AI_THINK;
+		            state = AI_THINK;
 		        }
 		        else
 		        {
 		            // 人間のターンの場合、入力待ち状態へ
-		            game.state = INPUT_WAIT;
+		            state = INPUT_WAIT;
 		        }
 		        break;
 
@@ -2002,7 +2015,7 @@ void main(void)
 		        // 現在の盤面、コマの色、配置可能数、探索深度を渡す
 		        set_AI_cursor_dest(board, cursor.color, (cursor.color == stone_red) ? red.placeable_count : green.placeable_count, AI_DEPTH);
 		        // AI移動状態へ遷移
-		        game.state = AI_MOVE;
+		        state = AI_MOVE;
 		        break;
 
 		    //********** プレイヤー入力フェーズ **********//
@@ -2013,7 +2026,7 @@ void main(void)
 		        if(select_btn_on)
 		        {
 		            // ボタンが押されたら配置チェック状態へ
-		            game.state = PLACE_CHECK;
+		            state = PLACE_CHECK;
 
 		            // 割り込みフラグをクリア
 		            select_btn_on = 0;
@@ -2021,7 +2034,7 @@ void main(void)
 		        else
 		        {
 		            // まだボタンが押されていない場合は入力読み取り状態へ
-		            game.state = INPUT_READ;
+		            state = INPUT_READ;
 		        }
 		        break;
 
@@ -2053,7 +2066,7 @@ void main(void)
 		        rotary.prev_cnt = rotary.current_cnt;
 
 		        // 入力待ち状態へ戻る
-		        game.state = INPUT_WAIT;
+		        state = INPUT_WAIT;
 		        break;
 
 		    //********** AI自動移動フェーズ **********//
@@ -2090,7 +2103,7 @@ void main(void)
 		        if((cursor.x == cursor.dest_x) && (cursor.y == cursor.dest_y))
 		        {
 		            // 到達したら配置チェック状態へ
-		            game.state = PLACE_CHECK;
+		            state = PLACE_CHECK;
 		        }
 
 		        // AI移動の待機時間
@@ -2104,17 +2117,17 @@ void main(void)
 		        if(game.is_skip)
 		        {
 		            // スキップ（置ける場所がない）の場合は配置せずにターン終了
-		            game.state = TURN_SWITCH;
+		            state = TURN_SWITCH;
 		        }
 		        else if(is_placeable(board, cursor.x, cursor.y, cursor.color))
 		        {
 		            // 配置可能な場合
-		            game.state = PLACE_OK;
+		            state = PLACE_OK;
 		        }
 		        else
 		        {
 		            // 配置不可能な場合
-		            game.state = PLACE_NG;
+		            state = PLACE_NG;
 		        }
 		        break;
 
@@ -2130,7 +2143,7 @@ void main(void)
 		        flush_board(board);
 
 		        // 反転計算状態へ遷移
-		        game.state = FLIP_CALC;
+		        state = FLIP_CALC;
 		        break;
 
 		    // 配置失敗状態
@@ -2140,7 +2153,7 @@ void main(void)
 
 		        // プレイヤーの場合は入力待ちに戻る
 		        // AIの場合は理論上ここに来ない（AIは必ず置ける場所を選ぶため）
-		        game.state = (game.is_AI_turn) ? TURN_START : INPUT_WAIT;
+		        state = (game.is_AI_turn) ? TURN_START : INPUT_WAIT;
 		        break;
 
 		    //********** コマ反転フェーズ **********//
@@ -2151,7 +2164,7 @@ void main(void)
 		        flip_dir_flag = make_flip_dir_flag(board, cursor.x, cursor.y, cursor.color);
 
 		        // 反転実行状態へ遷移
-		        game.state = FLIP_RUN;
+		        state = FLIP_RUN;
 		        break;
 
 		    // 反転実行状態
@@ -2163,7 +2176,7 @@ void main(void)
 		        flush_board(board);
 
 		        // ターン切り替え状態へ遷移
-		        game.state = TURN_SWITCH;
+		        state = TURN_SWITCH;
 		        break;
 
 		    //********** ターン終了フェーズ **********//
@@ -2174,7 +2187,7 @@ void main(void)
 		        cursor.color = ((cursor.color == stone_red) ? stone_green : stone_red);
 
 		        // ターンカウント状態へ遷移
-		        game.state = TURN_COUNT;
+		        state = TURN_COUNT;
 		        break;
 
 		    // ターンカウント状態
@@ -2184,7 +2197,7 @@ void main(void)
 		        green.placeable_count = count_placeable(board, stone_green);
 
 		        // ターン判定状態へ遷移
-		        game.state = TURN_JUDGE;
+		        state = TURN_JUDGE;
 		        break;
 
 		    // ターン判定状態
@@ -2193,7 +2206,7 @@ void main(void)
 		        if(is_game_over(red.placeable_count, green.placeable_count))
 		        {
 		            // ゲーム終了の場合、結果計算状態へ
-		            game.state = END_CALC;
+		            state = END_CALC;
 		        }
 		        else
 		        {
@@ -2201,7 +2214,7 @@ void main(void)
 		            game.is_skip = (cursor.color == stone_red) ? !red.placeable_count : !green.placeable_count;
 
 		            // ターン表示状態へ遷移
-		            game.state = TURN_SHOW;
+		            state = TURN_SHOW;
 		        }
 		        break;
 
@@ -2219,10 +2232,10 @@ void main(void)
 		        }
 
 		        // AI対戦モードの場合、AIターンフラグを切り替え
-		        if(game.is_vs_AI) game.is_AI_turn ^= 1;
+		        if(game.is_man_vs_AI) game.is_AI_turn ^= 1;
 
 		        // 次のターン開始状態へ遷移
-		        game.state = TURN_START;
+		        state = TURN_START;
 		        break;
 
 		    //********** ゲーム終了フェーズ **********//
@@ -2234,7 +2247,7 @@ void main(void)
 		        green.result = count_stones(board, stone_green);
 
 		        // 結果表示状態へ遷移
-		        game.state = END_SHOW;
+		        state = END_SHOW;
 		        break;
 
 		    // 結果表示状態
@@ -2258,10 +2271,10 @@ void main(void)
 		        // 確認メッセージを表示（再ゲーム確認）
 		        lcd_show_confirm();
 
-		        // 終了待ち状態へ遷移
-		        game.state = END_WAIT;
+		        // 通常時:終了待ち状態へ遷移
+                // AI vs AI時:ハードウェア初期化状態へ遷移
+		        state = (init_option == OPT_NORMAL) ? END_WAIT : INIT_HW;
 
-		        //game.state = INIT_HW;
 		        break;
 
 		    // 終了待ち状態
@@ -2271,14 +2284,14 @@ void main(void)
 		        {
 		            // ボタンが押されたらフラグをクリアしてリセット状態へ
 		            select_btn_on = 0;
-		            game.state = END_RESET;
+		            state = END_RESET;
 		        }
 		        break;
 
 		    // 終了リセット状態
 		    case END_RESET:
 		        // ハードウェア初期化状態へ遷移（ゲームを最初からやり直す）
-		        game.state = INIT_HW;
+		        state = INIT_HW;
 		        break;
 			
 			// 未定義状態
@@ -2290,7 +2303,7 @@ void main(void)
 		    default:
 				// 未定義状態を通知
 				lcd_show_state_err();
-				game.state = STATE_UNDEFINED;
+				state = STATE_UNDEFINED;
 		        break;
 		}
     }
