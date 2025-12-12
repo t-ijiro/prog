@@ -709,6 +709,14 @@ void lcd_show_skip_msg(void)
     flush_lcd();
 }
 
+// LCDをクリアして勝者発表メッセージ準備
+void lcd_show_result_ready(void)
+{
+	lcd_clear();
+	lcd_puts("Winner is ...");
+	flush_lcd();
+}
+
 // 最終結果を元に勝者を表示
 void lcd_show_winner(int red_stone_count, int green_stone_count)
 {
@@ -743,14 +751,6 @@ void lcd_show_confirm(void)
     lcd_xy(1, 2);
     lcd_puts("NEW -> PUSH SW7");
     flush_lcd();
-}
-
-// LCDをクリアして勝者発表メッセージ準備
-void lcd_show_result_ready(void)
-{
-	lcd_clear();
-	lcd_puts("Winner is ...");
-	flush_lcd();
 }
 
 // 未定義状態を通知
