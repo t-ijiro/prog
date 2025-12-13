@@ -50,7 +50,7 @@ static unsigned char is_out_of_HEIGHT(const int y)
     return ((MAT_HEIGHT - 1 < y) || (y < 0));
 }
 
-// 描画バッファ書き込み
+// 指定座標に色を書き込む
 void matrix_write(const int x, const int y, const enum led_color c)
 {
     if(is_out_of_WIDTH(x) || is_out_of_HEIGHT(y))
@@ -66,7 +66,7 @@ void matrix_write(const int x, const int y, const enum led_color c)
     canvas[y][x] = c;
 }
 
-// 描画バッファ読み込み
+// 指定座標の色を読み込む
 enum led_color matrix_read(const int x, const int y)
 {
     if(is_out_of_WIDTH(x) || is_out_of_HEIGHT(y))
@@ -77,7 +77,7 @@ enum led_color matrix_read(const int x, const int y)
     return canvas[y][x];
 }
 
-// 描画バッファを1つ削除
+// 指定座標の色を削除
 void matrix_delete(const int x, const int y)
 {
     if(is_out_of_WIDTH(x) || is_out_of_HEIGHT(y))
@@ -88,7 +88,7 @@ void matrix_delete(const int x, const int y)
     canvas[y][x] = led_off;
 }
 
-// 描画バッファを全削除
+// 描画バッファ全削除
 void matrix_clear(void)
 {
     memset(canvas, led_off, sizeof(canvas));
@@ -112,7 +112,7 @@ void matrix_flush(void)
     memcpy(display, canvas, sizeof(display));
 }
 
-// 表示バッファをマトリックスLED送信用データに変換
+// 指定列の表示バッファをマトリックスLED送信用16bitデータに変換
 unsigned int matrix_convert(const int x)
 {
     int y;
@@ -142,7 +142,7 @@ unsigned int matrix_convert(const int x)
     return data;
 }
 
-// 列を指定してマトリックスLEDにデータ出力
+// 指定列の16bitデータをマトリックスLEDに出力
 void matrix_out(const int x, const unsigned int data)
 {
     int shift_i;
