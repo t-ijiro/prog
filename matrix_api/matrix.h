@@ -1,6 +1,3 @@
-#ifndef MATRIX_H
-#define MATRIX_H
-
 // =========================================================
 // 使い方
 //
@@ -45,6 +42,8 @@
 //
 // ========================================================= 
 
+#ifndef MATRIX_H
+#define MATRIX_H
 
 #define MAT_WIDTH   8   // 横ドット数
 #define MAT_HEIGHT  8   // 縦ドット数
