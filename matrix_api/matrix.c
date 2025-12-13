@@ -94,6 +94,18 @@ void matrix_clear(void)
     memset(canvas, led_off, sizeof(canvas));
 }
 
+// 描画バッファを外部バッファにコピー
+void matrix_copy(enum led_color dst[MAT_HEIGHT][MAT_WIDTH])
+{
+    memcpy(dst, canvas, sizeof(canvas));
+}
+
+// 描画バッファに外部バッファを貼り付け
+void matrix_paste(const enum led_color src[MAT_HEIGHT][MAT_WIDTH])
+{
+    memcpy(canvas, src, sizeof(canvas));
+}
+
 // 描画バッファを表示バッファに反映
 void matrix_flush(void)
 {
