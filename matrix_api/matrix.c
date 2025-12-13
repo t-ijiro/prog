@@ -36,6 +36,8 @@ void init_MATRIX(void)
 {
     PORT1.PDR.BYTE = 0xE0;
     PORTE.PDR.BYTE = 0xFF;
+    PORT1.PODR.BIT.B6 = 0;
+    PORT1.PODR.BIT.B7 = 0;
 }
 
 // x座標チェック
@@ -154,7 +156,6 @@ void matrix_out(const int x, const unsigned int data)
     
     for(shift_i = 0; shift_i < MAT_WIDTH * 2; shift_i++) 
     {
-        
         if(data & (1 << shift_i)) 
         {
             SERIAL_SINK;
@@ -172,6 +173,5 @@ void matrix_out(const int x, const unsigned int data)
     LATCH_OUT;
 
     COL_EN = 1 << x;
-
 }
 
