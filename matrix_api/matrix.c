@@ -1,3 +1,6 @@
+// Created on : 2025/12/13
+// Author : T.Ijiro
+
 #include <string.h>
 #include "iodefine.h"
 #include "matrix.h"
@@ -149,4 +152,5 @@ void matrix_out(const int x, const unsigned int data)
     LATCH_OUT;
 
     COL_EN = 1 << x;
+
 }
