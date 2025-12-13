@@ -39,13 +39,13 @@ void init_MATRIX(void)
 }
 
 // x座標チェック
-unsigned char is_out_of_WIDTH(const int x)
+static unsigned char is_out_of_WIDTH(const int x)
 {
     return ((MAT_WIDTH - 1 < x) || (x < 0));
 }
 
 // y座標チェック
-unsigned char is_out_of_HEIGHT(const int y)
+static unsigned char is_out_of_HEIGHT(const int y)
 {
     return ((MAT_HEIGHT - 1 < y) || (y < 0));
 }
