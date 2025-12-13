@@ -18,7 +18,7 @@
 //    data = matrix_convert(col);  // 列データを変換
 //    matrix_out(col, data);       // LEDに出力
 //
-// 4. プログラム例
+// プログラム例
 // 例1：中心に赤いドットを表示
 //    matrix_clear();
 //    matrix_write(4, 4, led_red);
