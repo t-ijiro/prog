@@ -25,10 +25,17 @@ enum led_color{
 };
 
 // 描画用バッファ (読み書き専用)
-static enum led_color canvas[MAT_HEIGHT][MAT_WIDTH];
+static enum led_color canvas[MAT_HEIGHT][MAT_WIDTH]  = {led_off};
 
 // 表示用バッファ (読み取り専用)
-static enum led_color display[MAT_HEIGHT][MAT_WIDTH];
+static enum led_color display[MAT_HEIGHT][MAT_WIDTH] = {led_off};
+
+// 入出力初期化
+void init_MATRIX(void)
+{
+    PORT1.PDR.BYTE = 0xE0;
+    PORTE.PDR.BYTE = 0xFF;
+}
 
 // x座標チェック
 unsigned char is_out_of_WIDTH(const int x)
@@ -154,3 +161,4 @@ void matrix_out(const int x, const unsigned int data)
     COL_EN = 1 << x;
 
 }
+
