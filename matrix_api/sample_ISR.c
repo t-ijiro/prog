@@ -75,7 +75,7 @@ void Excep_CMT0_CMI0(void)
 void Excep_CMT1_CMI1(void)
 {
 	int y;
-	unsigned int d;
+	unsigned int rg_data;
 
 	vert_cnt++;
 	vert_cnt %= 8;
@@ -98,9 +98,9 @@ void Excep_CMT1_CMI1(void)
 
     matrix_flush();
 
-	d = matrix_convert(vert_cnt);
+	rg_data = matrix_convert(vert_cnt);
 
-	matrix_out(vert_cnt, d);
+	matrix_out(vert_cnt, rg_data);
 }
 
 // CMT2 CMI2
