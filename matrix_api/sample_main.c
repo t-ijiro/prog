@@ -223,14 +223,11 @@ void main(void)
 		if((roi_pre < roi) || (roi_pre == 65535 / 4 && roi == 0))
 		{
 			fore = 1 + fore % 3;
+			update_lcd_display();
 		}
 		else if((roi < roi_pre) || (roi == 65535 / 4 && roi_pre == 0))
 		{
 			back = 1 + back % 3;
-		}
-
-		if(roi != roi_pre)
-		{
 			update_lcd_display();
 		}
 
